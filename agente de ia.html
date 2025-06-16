@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente de IA - Playbook Impulseup CSI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body, p, input, #responseText {
+            font-family: 'Roboto', sans-serif; /* Fonte secundária */
+        }
+        h1, h2, button {
+            font-family: 'Poppins', sans-serif; /* Fonte primária */
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #DC139F; /* Cor da marca */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Agente de IA para o Playbook Impulseup CSI</h1>
+            <p class="mt-2 text-lg text-gray-600">Faça perguntas sobre o Playbook de Customer Success Implementation e obtenha respostas instantâneas.</p>
+        </header>
+
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+
+            <!-- Fazer Perguntas -->
+            <div id="step2" class="mt-2">
+                <h2 class="text-xl font-semibold mb-3 text-gray-800">Faça sua Pergunta</h2>
+                <p class="text-gray-600 mb-4">O playbook já está carregado. Pergunte qualquer coisa sobre o conteúdo.</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="userQuestion" class="flex-grow p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC139F] focus:border-[#DC139F] transition-shadow duration-200" placeholder="Ex: Quais são as responsabilidades de um CSI?">
+                    <button id="askButton" class="bg-[#DC139F] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#b71084] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DC139F] transition-all transform hover:scale-101 duration-200 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                        Perguntar
+                    </button>
+                </div>
+
+                <!-- Área de Resposta -->
+                <div id="responseArea" class="mt-6 p-5 bg-gray-100 rounded-lg border border-gray-200 hidden">
+                    <div id="loader" class="loader mx-auto hidden"></div>
+                    <div id="responseText" class="text-gray-800 whitespace-pre-wrap"></div>
+                </div>
+            </div>
+        </div>
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>Protótipo de Agente de IA. As respostas são geradas com base apenas no playbook da Impulseup.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Elementos da UI
+        const askButton = document.getElementById('askButton');
+        const userQuestion = document.getElementById('userQuestion');
+        const responseArea = document.getElementById('responseArea');
+        const responseText = document.getElementById('responseText');
+        const loader = document.getElementById('loader');
+
+        // Conteúdo do playbook pré-carregado
+        const processedPlaybookText = `
+Playbook Customer Success Implementation
+Atualização: dezembro de 2024
+Índice
+01 Visão geral, 02 Interfaces, 03 Questões práticas, 04 KPIs, 05 Ferramentas, 06 Serviço consultivo, 07 Jornada, 08 Boas práticas, 09 Playbooks, 10 Cases
+Sumário
+PARTE 1 - VISÃO GERAL: 1.1. Novo Upper, 1.2. Sucesso do cliente
+PARTE 2 - INTERFACES: 2.1. CSI + Suporte, 2.2. CSI + CSM, 2.3. CSI + Produto, 2.4. CSI + CS MKT, 2.5. CSI + People, 2.6. CSI + Parcerias
+PARTE 3 - QUESTÕES PRÁTICAS: 3.1. Comunicação, 3.2. Materiais de CS, 3.3. Procedimentos Internos
+PARTE 4 - KPIs: 4.1. Definição de KPIs de CSI, 4.2. Pesos dos KPIs
+PARTE 5 - FERRAMENTAS: 5.1. Sistemas, 5.2. Google Drive, 5.3. Sensedata
+PARTE 6 - SERVIÇO CONSULTIVO: 6.1. Serviço consultivo, 6.2. Pesquisa de satisfação, 6.3. Clientes sem serviço, 6.4. Matriz de atenção, 6.5. ICP
+PARTE 7 - JORNADA: 7.1. Jornadas do Cliente
+PARTE 8 - BOAS PRÁTICAS E LGPD: 8.1. Rotina interna, 8.2. Comunicação com clientes, 8.3. Treinamentos, 8.4. Relacionamento com clientes, 8.5. Reuniões, 8.6. LGPD, 8.7. Avaliação de Desempenho, 8.8. PDIs e Feedbacks, 8.9. Metas e OKRs, 8.10. Pesquisas, 8.11. Nine-Box, 8.12. Enterprise, 8.13. Boas práticas entre clientes
+PARTE 9 - PLAYBOOKS: 9.1. Playbooks de clientes em standby
+PARTE 10 - CASES E DESAFIOS: 10.1. Cases e desafios
+PARTE 11- CONTEÚDOS COMPLEMENTARES: 11.1. Materiais de estudo
+Visão geral - novo upper: Para saber mais sobre o onboarding de CSI consulte o Onboarding 5.0 Customer Success Implementation.
+O que é o buddy? O processo de buddy é um sistema de mentoria no qual um membro mais experiente da equipe acompanha e apoia um novo upper durante seus primeiros meses na empresa.
+Objetivos do buddy: Facilitar a integração, acelerar o aprendizado, promover um ambiente acolhedor, promover feedback e fornecer capacitação. Todos os novos uppers possuem um buddy definido pelo gestor.
+Reuniões recorrentes:
+Alinhamento de CSI (semanal), Reunião com a liderança (semanal), 1:1 com a liderança (mensal), Alinhamento de CS (quinzenal), Reunião de CS + Produto (quinzenal), Upcases de impacto (bimestral), All hands (trimestral), Buddy (semanal), Reunião de boas práticas (quinzenal).
+Nossos ritos: Reagimos com emojis, mandamos dicas pelo chat interno, abrimos as câmeras, usamos o chat da área, avisamos a liderança sobre ausências.
+Sucesso do cliente: Foca na experiência do cliente para maximizar retenção e LTV.
+Gerente de contas (CSM): Acompanha a trajetória do cliente, analisa resultados pós-onboarding, cuida de questões contratuais (novas licenças, renovações).
+Consultor de Implementação (CSI): Acompanha o início do projeto, faz orientações iniciais, treinamentos e workshops. Garante a implementação e parametrização da plataforma nos 90 dias iniciais.
+Technical Customer Support (TCS): Realiza inputs de arquivos (usuários, metas), cuida de configurações e esclarece dúvidas técnicas. Contato por email (suporte@impulseup.com) ou chat.
+Upleaders: Luísa e Manu (CSI), Elis Martins e Tiago Marques (CSM), Joyce Gonçalves (Suporte), etc.
+Comunicação com suporte: Chat para dúvidas urgentes. Email para solicitações não urgentes (gera ticket no Movidesk). Padronizar assunto do email: [Nome da Empresa] Resumo do assunto. Anexos via Google Drive na pasta do cliente.
+Acompanhamento de tickets: Pelo Movidesk (https://impulseup.movidesk.com).
+Integração, SSO e Importação de Histórico: Serviços técnicos pagos, contratação via CSM ou closer.
+Central de Ajuda: Contém tutoriais sobre o sistema.
+Quando chamar o CSM: Calls de Planejamento, Passagem de Bastão, cliente ausente, atrasos, troca de pessoa-chave, risco de crossell/upsell, problemas críticos, etc.
+Sugerindo melhorias de produto: Cadastrar no Jira - Product Feedback. Para urgências (risco de churn, conta enterprise), seguir processo com gestor e comitê de produto.
+Bugs: Tentar reproduzir, inspecionar console e reportar para suporte@impulseup.com com detalhes e vídeo/print.
+CS Marketing: Responsável pela comunicação com clientes (eventos, Upgrupo, Upcases de Impacto, campanhas, etc).
+Férias: Solicitar com no mínimo 40 dias de antecedência ao gestor e depois via sistema "Folha Certa".
+Comunicação: Usar tom de voz feminino para a marca Impulseup. Usar canais do Spaces para diferentes finalidades. Formalizar combinados por email.
+KPIs de CSI (Iniciação): X Milestones (10%), Total de Milestones (75%), Tempo médio até o Go Live (35%).
+KPIs de CSI (Conclusão): CSAT (10%), Taxa de Satisfação (20%), Cobertura de carteira, Adoção/Engajamento, Quantidade de passagens (25%).
+Ferramentas: UPTeam (KPIs, Feedbacks), UPBrain (admin geral), Hubspot (infos de CSM), Google Agenda, Google Drive, Google Spaces, Loom, ChurnZero.
+Serviço Consultivo: Planos de serviço para garantir o sucesso do cliente. Clientes Enterprise e High ganham serviços gratuitos. Low/Mid não.
+Matriz de Atenção: Define o nível de energia investido por cliente com base no ARR. (Enterprise > R$ 56.600, High, Mid, Low, Tech).
+Jornada do cliente: Receber conta > Iniciar implementação > Apresentar resultados > Passagem de bastão > Ongoing.
+LGPD: Base de dados nos EUA (Heroku). E-mails via Sendgrid/Sendinblue. Criptografia em repouso. Dúvidas: dpo@impulseup.com.
+Critérios de Standby: 2 semanas sem retorno, 2+ no-shows em reuniões, sem cronograma claro.
+        `;
+
+        // Event listener para o botão de perguntar
+        askButton.addEventListener('click', handleAskQuestion);
+        userQuestion.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                handleAskQuestion();
+            }
+        });
+
+        async function handleAskQuestion() {
+            const question = userQuestion.value.trim();
+            if (!question) {
+                // Em vez de alert, podemos mostrar uma mensagem sutil
+                userQuestion.placeholder = "Por favor, faça uma pergunta.";
+                userQuestion.classList.add('placeholder-[#DC139F]');
+                setTimeout(() => {
+                   userQuestion.placeholder = "Ex: Quais são as responsabilidades de um CSI?";
+                   userQuestion.classList.remove('placeholder-[#DC139F]');
+                }, 2000);
+                return;
+            }
+
+            // Mostra o loader e a área de resposta
+            responseArea.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            responseText.classList.add('hidden');
+            askButton.disabled = true;
+            askButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                // Monta o prompt para a IA
+                const prompt = `
+                    Com base estritamente no seguinte "Playbook", responda à "Pergunta" do usuário.
+                    Sua resposta deve ser concisa, direta e baseada apenas nas informações fornecidas no playbook.
+                    Se a resposta não estiver no playbook, responda: "Não encontrei informações sobre isso no playbook."
+                    Não utilize nenhum conhecimento externo.
+
+                    --- PLAYBOOK ---
+                    ${processedPlaybookText}
+                    --- FIM DO PLAYBOOK ---
+
+                    --- PERGUNTA ---
+                    ${question}
+                    --- FIM DA PERGUNTA ---
+                `;
+                
+                // Configuração da chamada para a API do Gemini
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // A chave de API é tratada pelo ambiente
+                const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`;
+
+                // Faz a requisição para a API
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(\`API Error: \${response.statusText}\`);
+                }
+
+                const result = await response.json();
+                
+                let answer = "Desculpe, não consegui gerar uma resposta. Tente novamente.";
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    answer = result.candidates[0].content.parts[0].text;
+                }
+                
+                // Exibe a resposta
+                responseText.innerText = answer;
+
+            } catch (error) {
+                console.error('Error fetching from Gemini API:', error);
+                responseText.innerText = 'Ocorreu um erro ao buscar a resposta. Verifique a consola para mais detalhes.';
+            } finally {
+                // Esconde o loader e mostra o texto da resposta
+                loader.classList.add('hidden');
+                responseText.classList.remove('hidden');
+                askButton.disabled = false;
+                askButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    </script>
+</body>
+</html>
